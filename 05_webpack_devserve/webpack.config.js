@@ -9,6 +9,10 @@ module.exports={
   },
   module:{
     rules:[
+      {
+        test:/\.css$/,
+        use:["style-loader","css-loader"]
+      },
        {
          test:/\.less$/,
          use:["style-loader","css-loader","less-loader"]
@@ -29,13 +33,21 @@ module.exports={
             esModule:false,
             // 给图片进行重命名
             // [hash:10]取图片的hash的前10位
-            // [text]取文件原来扩展名
+            // [ext]取文件原来扩展名
             name:"[hash:10].[ext]"
         }
       },
       {
         test:/\.html$/,
-        use:"html-loader"
+        loader:"html-loader"
+      },
+      {
+        //处理其他资源
+        exclude:/\.(html|js|css|less|jpg|png|gif)$/,
+        loader:"file-loader",
+        options:{
+          name:"[hash:10].[ext]"
+        }
       }
     ]
   },
