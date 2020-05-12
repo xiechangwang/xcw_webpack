@@ -4,6 +4,42 @@ const MiniCssExtractPlugin=require('mini-css-extract-plugin');
 //压缩 css 插件：optimize-css-assets-webpack-plugin
 const OptimizeCssAssetsWebpackPlugin=require('optimize-css-assets-webpack-plugin');
 
+//定义nodejs环境变量，决定package.json中browserslist运用那个环境
+process.env.NODE_ENV="production"
+
+//定义统一css处理
+const commonCssLoader=[
+  // "style-loader", //创建style标签，将样式放入
+  MiniCssExtractPlugin.loader,  //这个loader取代style-loader，提取css成单独文件
+  "css-loader",  //将css文件整合到js文件中
+  /* 
+  css 兼容处理：postcss--->postcss-loader postcss-preset-env
+  帮postcss找到package.json中browserslist里面的配置。通过配置加载指定的css兼容样式
+  "browserslist":{
+    "development":[
+      "last 1 chrome version",  最近一版的谷歌
+      "last 1 firefox version",
+      "last 1 safari version"
+    ],
+    "production":[
+      ">0.2%",  大于0.2%浏览器
+      "not dead", 
+      "not op_mini all" 兼容有所浏览器
+    ]
+  }   
+  */
+ //使用：使用loader默认配置‘postcss-loader’
+ //修改loader配置
+ {
+   loader:"postcss-loader",
+    options:{ 
+      ident:"postcss",
+      plugins:()=>[
+        require('postcss-preset-env')()
+      ]
+    }
+  }
+]
 
 module.exports={
   entry:"./src/index.js",
@@ -67,51 +103,16 @@ module.exports={
       exclude: /node_modules/,
       loader: 'eslint-loader',
       options: {
-        fix: true,  //自动更新格式
+        fix: true,  //自动更新格式,修复问题
       },
     },
       {
         test:/\.css$/,
-        use:[
-          // "style-loader", //创建style标签，将样式放入
-          MiniCssExtractPlugin.loader,  //这个loader取代style-loader，提取css成单独文件
-          "css-loader",  //将css文件整合到js文件中
-          /* 
-          css 兼容处理：postcss--->postcss-loader postcss-preset-env
-          帮postcss找到package.json中browserslist里面的配置。通过配置加载指定的css兼容样式
-          "browserslist":{
-            "development":[
-              "last 1 chrome version",  最近一版的谷歌
-              "last 1 firefox version",
-              "last 1 safari version"
-            ],
-            "production":[
-              ">0.2%",  大于0.2%浏览器
-              "not dead", 
-              "not op_mini all" 兼容有所浏览器
-            ]
-          }   
-          */
-         //使用：使用loader默认配置‘postcss-loader’
-         //修改loader配置
-         {
-           loader:"postcss-loader",
-            options:{ 
-              ident:"postcss",
-              plugins:()=>[
-                require('postcss-preset-env')()
-              ]
-            }
-          }
-        ]
+        use:[...commonCssLoader]
       },
        {
          test:/\.less$/,
-         use:[
-          //  "style-loader",
-          MiniCssExtractPlugin.loader,
-           "css-loader",
-           "less-loader"
+         use:[...commonCssLoader,"less-loader"
           ]
        },
        {
@@ -151,14 +152,14 @@ module.exports={
   plugins:[
     new HtmlWebpackPlugin({
       template:"./src/index.html",
+      minify:false  //生产环境自动压缩
       //html压缩配置
-      minify:{
-        //移除空格
-        collapseWhitespace:true,
-        //移除注释
-        removeComments:true
-      }
-
+      // minify:{
+      //   //移除空格
+      //   collapseWhitespace:true,
+      //   //移除注释
+      //   removeComments:true
+      // }
     }),
     //下载插件将css提取成单独文件
     //mini-css-extract-plugin
@@ -168,18 +169,18 @@ module.exports={
     //压缩css
     new OptimizeCssAssetsWebpackPlugin()
   ],
-  mode:"development",
+  mode:"production",
   //开发服务器devServer,热更新.
   //特点：只会在内存中编译打包,不会有任何输出
   //启动devServer指令npx webpack-dev-server
-  devServer:{
-    contentBase:resolve(__dirname,"build"),
-    //启动gzip压缩
-    compress:true,
-    //端口
-    port:3030,
-    //打开默认浏览器
-    open:true
-  }
+  // devServer:{
+  //   contentBase:resolve(__dirname,"build"),
+  //   //启动gzip压缩
+  //   compress:true,
+  //   //端口
+  //   port:3030,
+  //   //打开默认浏览器
+  //   open:true
+  // }
 
 }
